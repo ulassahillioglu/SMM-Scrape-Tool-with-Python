@@ -38,7 +38,7 @@ def ScrapeTool(a): #Left to right 'provider - desired keyword1 - desired keyword
     prices = [] 
     minAndmax = []
 
-    profile_path = "C:/Users/ulas.sahillioglu/AppData/Roaming/Mozilla/Firefox/Profiles/swd2omwo.johannmcrollin"
+    profile_path = "C:/Users/"   ##Enter your Firefox profile if you wish to use geckodriver
     options=Options()
     options.set_preference('profile', profile_path)
     options.accept_insecure_certs  #SSL Cert bypass
@@ -139,7 +139,7 @@ for provider in (trProvider):
 
 
 
-        profile_path = "C:/Users/ulas.sahillioglu/AppData/Roaming/Mozilla/Firefox/Profiles/swd2omwo.johannmcrollin"
+        profile_path = "C:/Users/"
         options=Options()
         options.set_preference('profile', profile_path)
         options.accept_insecure_certs  #SSL Cert bypass
@@ -260,7 +260,7 @@ for provider in (trProvider):
         minAndmax = []
         url = "https://panelhizmetleri.net/services"
 
-        profile_path = "C:/Users/ulas.sahillioglu/AppData/Roaming/Mozilla/Firefox/Profiles/swd2omwo.johannmcrollin"
+        profile_path = "C:/Users/"
         options=Options()
         options.set_preference('profile', profile_path)
         options.accept_insecure_certs  #SSL Cert bypass
@@ -340,7 +340,7 @@ for provider in (trProvider):
         url = "https://smpanel.net/services"
 
 
-        profile_path = "C:/Users/ulas.sahillioglu/AppData/Roaming/Mozilla/Firefox/Profiles/swd2omwo.johannmcrollin"
+        profile_path = "C:/Users/"
         options=Options()
         options.set_preference('profile', profile_path)
         options.accept_insecure_certs  #SSL Cert bypass
@@ -429,7 +429,7 @@ for provider in (trProvider):
 
 
 
-        profile_path = "C:/Users/ulas.sahillioglu/AppData/Roaming/Mozilla/Firefox/Profiles/swd2omwo.johannmcrollin"
+        profile_path = "C:/Users/"
         options=Options()
         options.set_preference('profile', profile_path)
         options.accept_insecure_certs  #SSL Cert bypass
@@ -518,7 +518,7 @@ for provider in (trProvider):
     elif provider == "https://smmturk.net/services":
         url = "https://smmturk.net/services"
         template = list()
-        profile_path = "C:/Users/ulas.sahillioglu/AppData/Roaming/Mozilla/Firefox/Profiles/swd2omwo.johannmcrollin"
+        profile_path = "C:/"
         options=Options()
         options.set_preference('profile', profile_path)
         options.accept_insecure_certs  #SSL Cert bypass
