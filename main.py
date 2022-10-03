@@ -1,4 +1,5 @@
 import random
+import re
 from selenium.webdriver import Chrome
 from bs4 import BeautifulSoup
 from openpyxl import Workbook
@@ -15,7 +16,8 @@ import time
 from openpyxl import Workbook
 from itertools import chain
 
-followers_list = [] 
+pattern = re.compile(r"($)*\d{1,3}[\.,]\d{1,8}\W") ##regex to find prices on necessary circumstances
+
 global b, c, d, e, f, m, n, j, website
 b = input("Word to Search 1: ")
 c = input("Word to Search 2 (switches with alternative word if desired): ")  ##TR tedarikçilerde aynı servisler farklı isimlere sahip olabliyor
@@ -30,6 +32,21 @@ m = "açıklama"
 n = "mevcuttur"
 j = "notlar"
 
+def appendToExcel(a,b,c):   ##will be used for df to excel operations
+    df = pd.DataFrame(a)
+    try:
+        book = load_workbook(b) ##create a new file for new tests
+    except:
+        wb = Workbook()
+        wb.save(b)
+        book = load_workbook(b)
+    writer = pd.ExcelWriter(b, engine='openpyxl',mode="a",if_sheet_exists="new") 
+    writer.book = book
+    nameToAppend = c.split("/")
+    pageName = nameToAppend[2]
+    df.to_excel(writer, sheet_name= pageName,index=False)
+    writer.save()
+    writer.close()
 def ScrapeTool(a): #Left to right 'provider - desired keyword1 - desired keyword1 - omitted word - file name'
     
     template = []
@@ -38,13 +55,14 @@ def ScrapeTool(a): #Left to right 'provider - desired keyword1 - desired keyword
     prices = [] 
     minAndmax = []
 
-    profile_path = "C:/Users/"   ##Enter your Firefox profile if you wish to use geckodriver
+    profile_path = "C:/Users/ulas.sahillioglu/AppData/Roaming/Mozilla/Firefox/Profiles/swd2omwo.johannmcrollin"
     options=Options()
     options.set_preference('profile', profile_path)
     options.accept_insecure_certs  #SSL Cert bypass
     service = Service('chromedriver.exe')
 
     driver = webdriver.Chrome()
+    driver.minimize_window()
     driver.implicitly_wait(10)
     driver.get(a)
     WebDriverWait(driver,random.randint(5,15)) 
@@ -61,7 +79,8 @@ def ScrapeTool(a): #Left to right 'provider - desired keyword1 - desired keyword
     # print(template)
 
     for element in template:
-        x = template.index(element) 
+        x = template.index(element) ##find the index of found element
+
         #filters table elements as requested, uncomment first if block and comment second if block to use with alternative word
         # if b in element.lower() and c in element.lower() and f in element.lower() and d not in element.lower() and m not in element.lower() and n not in element.lower() and j not in element.lower() or b in element.lower() and k in element.lower() and f in element.lower() and d not in element.lower() and m not in element.lower() and n not in element.lower() and j not in element.lower(): 
         if b in element.lower() and c in element.lower() and f in element.lower() and d not in element.lower() and m not in element.lower() and n not in element.lower() and j not in element.lower(): 
@@ -130,7 +149,7 @@ trProvider = ["https://sosyalbayiniz.net/services","https://paneliniz.com/servic
 for provider in (trProvider):
     if provider == "https://sosyalatom.com/services":
         template = []
-        suppId =[]
+        suppId = []
         products = []
         prices = [] 
         minnb = []
@@ -139,7 +158,7 @@ for provider in (trProvider):
 
 
 
-        profile_path = "C:/Users/"
+        profile_path = "C:/Users/ulas.sahillioglu/AppData/Roaming/Mozilla/Firefox/Profiles/swd2omwo.johannmcrollin"
         options=Options()
         options.set_preference('profile', profile_path)
         options.accept_insecure_certs  #SSL Cert bypass
@@ -147,6 +166,7 @@ for provider in (trProvider):
 
         driver = webdriver.Chrome()
         driver.implicitly_wait(10)
+        driver.minimize_window()
         driver.get(url)
         website = driver.page_source.encode("utf-8")
         WebDriverWait(driver,random.randint(5,15))
@@ -161,32 +181,37 @@ for provider in (trProvider):
 
 
         driver.close()
-
+        print(len(idlist))
+        # print(servicelist)
         for data in idlist:
             data = data.text.replace("\t","").replace("\n","").strip()
             suppId.append(data)
         for service in servicelist:
             products.append(service.text.replace("\t","").strip())
 
-        # print(suppId)
-
+        print(suppId)
+        stringToCompile = ""
+        matches = []
         pricelist = []
         servicenames = []
         serviceId= []
         for ele in suppId:
-            try:
-                indnumber = int(suppId.index(ele))
-                s = suppId[indnumber].split("-")
-                pricelist.append(s[1].replace("TL","").strip())
-                servicenames.append(s[0])
-                serviceId.append(suppId[indnumber-1])
-            except:
-                pass
-        i = 0
-        supplier = []
-        while i<=len(suppId)-2:
-            supplier.append([suppId[i],suppId[i+1]])
-            i = i+2
+                
+                
+                stringToCompile += ele
+
+        for ele in range(0,len(suppId),2):
+                serviceId.append(suppId[ele])
+                servicenames.append(suppId[ele+1])
+
+        matches = pattern.finditer(stringToCompile)
+        matchElements = []
+
+        for match in matches:
+                matchElements.append(match[0])
+        print(len(matchElements))
+                
+
         print(len(products))
         i = 0
         newlist= []
@@ -195,6 +220,7 @@ for provider in (trProvider):
             i = i+2
         print(len(newlist))
 
+
         minlist = []
         maxlist= []
         i=0
@@ -202,14 +228,14 @@ for provider in (trProvider):
             minlist.append(newlist[i])
             maxlist.append(newlist[i+1])
             i = i+2
-        print(len(minlist),len(maxlist))
-
-        services = list(zip(serviceId,servicenames,pricelist,minlist,maxlist))
-
-        # print(services)
+        print(len(serviceId),len(servicenames),len(matchElements),len(minlist),len(maxlist))
 
 
+
+
+        services = list(zip(serviceId,servicenames,matchElements,minlist,maxlist))
         template = list(chain.from_iterable(services))
+        # print(services)
         # print(template)
         suppId =[]
         products = []
@@ -235,8 +261,9 @@ for provider in (trProvider):
         }
 
         # print(minAndmax)
-        df = pd.DataFrame(scrape_dict)
         
+        df = pd.DataFrame(scrape_dict)
+
         try:
             book = load_workbook(e) ##create a new file for new tests
         except:
@@ -260,7 +287,7 @@ for provider in (trProvider):
         minAndmax = []
         url = "https://panelhizmetleri.net/services"
 
-        profile_path = "C:/Users/"
+        profile_path = "C:/Users/ulas.sahillioglu/AppData/Roaming/Mozilla/Firefox/Profiles/swd2omwo.johannmcrollin"
         options=Options()
         options.set_preference('profile', profile_path)
         options.accept_insecure_certs  #SSL Cert bypass
@@ -268,6 +295,7 @@ for provider in (trProvider):
 
         driver = webdriver.Chrome()
         driver.implicitly_wait(10)
+        driver.minimize_window()
         driver.get(url)
         website = driver.page_source.encode("utf-8")
         WebDriverWait(driver,random.randint(5,15))
@@ -340,7 +368,7 @@ for provider in (trProvider):
         url = "https://smpanel.net/services"
 
 
-        profile_path = "C:/Users/"
+        profile_path = "C:/Users/ulas.sahillioglu/AppData/Roaming/Mozilla/Firefox/Profiles/swd2omwo.johannmcrollin"
         options=Options()
         options.set_preference('profile', profile_path)
         options.accept_insecure_certs  #SSL Cert bypass
@@ -348,6 +376,7 @@ for provider in (trProvider):
 
         driver = webdriver.Chrome()
         driver.implicitly_wait(10)
+        driver.minimize_window()
         driver.get(url)
         website = driver.page_source.encode("utf-8")
         
@@ -356,6 +385,8 @@ for provider in (trProvider):
         servicelist = soup.select("td[data-title = 'Servis']")
         pricelist = soup.select("td[data-title = '1000 Adet']")
         minmaxamount = soup.select("td[data-title = 'Min-Maks']")
+
+        driver.close()
 
         for data in idlist:
             data = data.text
@@ -429,7 +460,7 @@ for provider in (trProvider):
 
 
 
-        profile_path = "C:/Users/"
+        profile_path = "C:/Users/ulas.sahillioglu/AppData/Roaming/Mozilla/Firefox/Profiles/swd2omwo.johannmcrollin"
         options=Options()
         options.set_preference('profile', profile_path)
         options.accept_insecure_certs  #SSL Cert bypass
@@ -437,6 +468,7 @@ for provider in (trProvider):
 
         driver = webdriver.Chrome()
         driver.implicitly_wait(10)
+        driver.minimize_window()
         driver.get(url)
         website = driver.page_source.encode("utf-8")
         WebDriverWait(driver,random.randint(5,15))
@@ -518,13 +550,14 @@ for provider in (trProvider):
     elif provider == "https://smmturk.net/services":
         url = "https://smmturk.net/services"
         template = list()
-        profile_path = "C:/"
+        profile_path = "C:/Users/ulas.sahillioglu/AppData/Roaming/Mozilla/Firefox/Profiles/swd2omwo.johannmcrollin"
         options=Options()
         options.set_preference('profile', profile_path)
         options.accept_insecure_certs  #SSL Cert bypass
 
         driver = webdriver.Chrome()
         driver.get(url)
+        driver.minimize_window()
 
         info = driver.page_source
         soup = BeautifulSoup(info,'html.parser')
@@ -615,3 +648,4 @@ for provider in (trProvider):
         print("Taking a break")
 
 print("Completed")   
+
